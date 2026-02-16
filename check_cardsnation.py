@@ -103,9 +103,26 @@ def fetch_html(url: str) -> str:
     r.raise_for_status()
     return r.text
 
+
+def maybe_send_heartbeat(state: Dict[str, str]) -> None:
+    import time
+
+    now_ts = int(time.time())
+    last_heartbeat = int(state.get("_last_heartbeat", 0))
+
+    SIX_HOURS = 60
+    #SIX_HOURS = 6 * 60 * 60
+
+    if now_ts - last_heartbeat >= SIX_HOURS:
+        telegram_send("💓 Heartbeat: monitor is running.")
+        state["_last_heartbeat"] = now_ts
+
+
+
 def main() -> None:
     state = load_state()  # url -> "available"/"not_available"
     changed_to_available = []
+    maybe_send_heartbeat(state)
 
     for i, url in enumerate(URLS):
         try:

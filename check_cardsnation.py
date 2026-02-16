@@ -14,6 +14,7 @@ URLS = [
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/17298-pokemon-ascended-heroes-elite-trainer-box-dragonite/",
     "https://www.pokeriders.cz/en/elite-trainer-box--etb/ascended-heroes-elite-trainer-box/?srsltid=AfmBOorfz8MQ4EvuL3ccW-mVUBPNlIqgv25yM8AkhB_NynlEHpIF0I5t",
     "https://www.xzone.cz/karetni-hra-pokemon-tcg-mega-evolution-ascended-heroes-booster-bundle-6-boosteru",
+    "https://www.kuma.cz/pokemon-tcg-mega-evolution-ascended-heroes-elite-trainer-box-dragonite/?_fid=mulc",
 ]
 
 STATE_FILE = Path("state.json")

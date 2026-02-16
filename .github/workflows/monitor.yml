@@ -12,10 +12,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Restore state cache
-      - uses: actions/cache@v4
+        uses: actions/cache@v4
         with:
           path: state.json
           key: cardsnation-state
+
 
       - uses: actions/setup-python@v5
         with:

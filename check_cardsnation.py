@@ -2,6 +2,7 @@ import json
 import os
 import re
 import time
+from urllib.parse import urlparse
 from pathlib import Path
 from typing import Dict
 
@@ -20,22 +21,58 @@ URLS = [
 STATE_FILE = Path("state.json")
 
 NOT_AVAILABLE_PATTERNS = [
+    # Shoptet-like (Pokemall / Pokeriders)
     r"Položka byla vyprodána",
-    r"Dostupnost:\s*Objednáno",
-    r"\bHlídat\b",
+    r"The item has been sold out",
+
+    # Veselý drak
+    r"Dostupnost:\s*na dotaz",
+    r"Na eshopu nemáme dostupné",
+    r"Hlídat produkt",
+
+    # Xzone / generic
+    r"\bPřipravujeme\b",
+    r"\bOutOfStock\b",   # best signal for Xzone
+
+    # Kuma
+    r"Produkt aktuálně nelze zakoupit",
+    r"\bnelze\s+zakoupit\b",
 ]
+
 
 AVAILABLE_PATTERNS = [
-    r"Do košíku",
-    r"Vložit do košíku",
-    r"Přidat do košíku",
-    r"Koupit",
+    # Czech add-to-cart
+    r"\bDo\s+košíku\b",
+    r"\bVložit\s+do\s+košíku\b",
+    r"\bPřidat\s+do\s+košíku\b",
+
+    # Structured data (Xzone often includes this)
+    r"\bInStock\b",
+
+    # English add-to-cart (in case)
+    r"\bAdd\s+to\s+cart\b",
 ]
 
-def is_available(html: str) -> bool:
-    has_available = any(re.search(p, html, re.IGNORECASE) for p in AVAILABLE_PATTERNS)
-    has_not_available = any(re.search(p, html, re.IGNORECASE) for p in NOT_AVAILABLE_PATTERNS)
-    return has_available and not has_not_available
+
+
+def is_available(url: str, html: str) -> bool:
+    host = urlparse(url).netloc.lower()
+
+    # Xzone: rely on schema markers, not "Do košíku" text (could be for other products)
+    if "xzone.cz" in host:
+        if re.search(r"\bOutOfStock\b", html, re.IGNORECASE):
+            return False
+        if re.search(r"\bInStock\b", html, re.IGNORECASE):
+            return True
+        return False  # conservative fallback
+
+    # Everyone else: any NOT_AVAILABLE wins
+    if any(re.search(p, html, re.IGNORECASE) for p in NOT_AVAILABLE_PATTERNS):
+        return False
+
+    # Require a clear add-to-cart signal (tight patterns only)
+    return any(re.search(p, html, re.IGNORECASE) for p in AVAILABLE_PATTERNS)
+
 
 def telegram_send(text: str) -> None:
     token = os.environ["TELEGRAM_BOT_TOKEN"]
@@ -73,7 +110,7 @@ def main() -> None:
     for i, url in enumerate(URLS):
         try:
             html = fetch_html(url)
-            now = "available" if is_available(html) else "not_available"
+            now = "available" if is_available(url, html) else "not_available"
         except Exception as e:
             # Don't flip state on temporary failures
             print(f"ERROR fetching {url}: {e}")

@@ -105,18 +105,28 @@ def fetch_html(url: str) -> str:
 
 
 def maybe_send_heartbeat(state: Dict[str, str]) -> None:
-    import time
-
     now_ts = int(time.time())
     last_heartbeat = int(state.get("_last_heartbeat", 0))
 
-    SIX_HOURS = 60
-    #SIX_HOURS = 6 * 60 * 60
+    SIX_HOURS = 60  # 6 hours
+    #SIX_HOURS = 6 * 60 * 60  # 6 hours
 
     if now_ts - last_heartbeat >= SIX_HOURS:
-        telegram_send("💓 Heartbeat: monitor is running.")
-        state["_last_heartbeat"] = now_ts
+        utc_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 
+        total_urls = len(URLS)
+        available_count = sum(
+            1 for url in URLS if state.get(url) == "available"
+        )
+
+        telegram_send(
+            f"💓 Heartbeat\n"
+            f"🕒 UTC: {utc_time}\n"
+            f"🔗 Monitoring: {total_urls} products\n"
+            f"📦 Available now: {available_count}"
+        )
+
+        state["_last_heartbeat"] = now_ts
 
 
 def main() -> None:

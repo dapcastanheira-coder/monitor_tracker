@@ -108,8 +108,7 @@ def maybe_send_heartbeat(state: Dict[str, str]) -> None:
     now_ts = int(time.time())
     last_heartbeat = int(state.get("_last_heartbeat", 0))
 
-    SIX_HOURS = 60  # 6 hours
-    #SIX_HOURS = 6 * 60 * 60  # 6 hours
+    SIX_HOURS = 6 * 60 * 60  # 6 hours
 
     if now_ts - last_heartbeat >= SIX_HOURS:
         utc_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())

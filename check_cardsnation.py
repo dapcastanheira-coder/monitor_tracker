@@ -10,8 +10,10 @@ import requests
 URLS = [
     "https://www.cardsnation.cz/pokemon-tcg--me-2-5-ascended-heroes-elite-trainer-box/",
     # Add 2–4 more here:
-    # "https://www.cardsnation.cz/another-product/",
-    # "https://www.cardsnation.cz/yet-another-product/",
+    "https://www.pokemall.cz/ascended-heroes/pokemon-tcg-ascended-heroes-elite-trainer-box/",
+    "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/17298-pokemon-ascended-heroes-elite-trainer-box-dragonite/",
+    "https://www.pokeriders.cz/en/elite-trainer-box--etb/ascended-heroes-elite-trainer-box/?srsltid=AfmBOorfz8MQ4EvuL3ccW-mVUBPNlIqgv25yM8AkhB_NynlEHpIF0I5t",
+    "https://www.xzone.cz/karetni-hra-pokemon-tcg-mega-evolution-ascended-heroes-booster-bundle-6-boosteru",
 ]
 
 STATE_FILE = Path("state.json")

@@ -147,6 +147,7 @@ def main() -> None:
 
     save_state(state)
 
+
 if __name__ == "__main__":
     main()
 

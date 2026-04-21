@@ -12,7 +12,13 @@ from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 URLS = [
     "https://www.alza.cz/hracky/pokemon-tcg-me02-5-ascended-heroes-elite-trainer-box-d13221719.htm",
     "https://www.vesely-drak.cz/produkty/booster-boxy/17294-pokemon-ascended-heroes-booster-bundle/",
-    "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/17298-pokemon-ascended-heroes-elite-trainer-box-dragonite/",
+    "https://www.vesely-drak.cz/produkty/pokemon-gx-box/17559-pokemon-ascended-heroes-mega-meganium-ex-box/",
+    "https://www.vesely-drak.cz/produkty/pokemon-gx-box/17560-pokemon-ascended-heroes-mega-emboar-ex-box/",
+    "https://www.vesely-drak.cz/produkty/boostery/17293-pokemon-mega-evolution-ascended-heroes-booster/",
+    "https://www.chaotit.cz/pokemon-tcg-ascended-heroes-booster-bundle/",
+    "https://www.xzone.cz/karetni-hra-pokemon-tcg-mega-evolution-ascended-heroes-booster-bundle-6-boosteru?srsltid=AfmBOoqCLzAejvAG0CJd1i11jcrdb2oeX-Yq5f4wi6o9tbXIHZ-jw8q-",
+    
+    
 ]
 
 STATE_FILE = Path("state.json")

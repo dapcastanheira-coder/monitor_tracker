@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 
 URLS = [
     "https://www.alza.cz/hracky/pokemon-tcg-me02-5-ascended-heroes-elite-trainer-box-d13221719.htm",
-    "https://www.pokemall.cz/ascended-heroes/pokemon-tcg-ascended-heroes-elite-trainer-box/",
+    "https://www.vesely-drak.cz/produkty/booster-boxy/17294-pokemon-ascended-heroes-booster-bundle/",
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/17298-pokemon-ascended-heroes-elite-trainer-box-dragonite/",
 ]
 

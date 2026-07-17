@@ -16,6 +16,7 @@ URLS = [
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
     "https://www.alola.cz/elite-trainer-boxy/",
     "https://www.kitstore.cz/elite-trainer-box",
+    "https://www.cdmc.cz/premiove-kolekce/pokemon-tcg--first-partner-illustration-collection-series-3/",
     "https://www.cdmc.cz/elite-trainer-boxy/",
     "https://www.smarty.sk/pokemon-tcg-30th-celebration-elite-trainer-box-4p278101",
     "https://www.cardstore.cz/pokemon-tcg--30th-celebration-elite-trainer-box/",

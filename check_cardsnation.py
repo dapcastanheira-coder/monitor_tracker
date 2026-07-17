@@ -10,15 +10,29 @@ import requests
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 
 URLS = [
-    "https://www.alza.cz/hracky/pokemon-tcg-me02-5-ascended-heroes-elite-trainer-box-d13221719.htm",
-    "https://www.vesely-drak.cz/produkty/booster-boxy/17294-pokemon-ascended-heroes-booster-bundle/",
-    "https://www.vesely-drak.cz/produkty/pokemon-gx-box/17559-pokemon-ascended-heroes-mega-meganium-ex-box/",
-    "https://www.vesely-drak.cz/produkty/pokemon-gx-box/17560-pokemon-ascended-heroes-mega-emboar-ex-box/",
-    "https://www.vesely-drak.cz/produkty/boostery/17293-pokemon-mega-evolution-ascended-heroes-booster/",
-    "https://www.chaotit.cz/pokemon-tcg-ascended-heroes-booster-bundle/",
-    "https://www.xzone.cz/karetni-hra-pokemon-tcg-mega-evolution-ascended-heroes-booster-bundle-6-boosteru?srsltid=AfmBOoqCLzAejvAG0CJd1i11jcrdb2oeX-Yq5f4wi6o9tbXIHZ-jw8q-",
-    
-    
+    "https://www.alza.cz/search.htm?exps=Elite+Trainer+box",
+    "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
+    "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
+    "https://www.alola.cz/elite-trainer-boxy/",
+    "https://www.kitstore.cz/elite-trainer-box",
+    "https://www.cdmc.cz/elite-trainer-boxy/",
+    "https://www.smarty.sk/pokemon-tcg-30th-celebration-elite-trainer-box-4p278101",
+    "https://www.cardstore.cz/pokemon-tcg--30th-celebration-elite-trainer-box/",
+    "https://www.vesely-drak.cz/produkty/specialni-sety/19147-pokemon-30th-celebration-ultra-premium-collection-night/",
+    "https://www.vesely-drak.cz/produkty/specialni-sety/19146-pokemon-30th-celebration-ultra-premium-collection-day/",
+    "https://www.xzone.cz/pokemon-tcg-elite-trainer-boxy?sort=date_desc&s=60&page=1&term=&c=946",
+    "https://www.smarty.sk/pokemon-tcg-30th-celebration-ultra-premium-collection-den-a-noc-4p278108",
+    "https://www.ihrysko.sk/pokemon-30th-celebration-ultra-premium-collection-night-umbreon-p122332",
+    "https://www.ihrysko.sk/pokemon-30th-celebration-ultra-premium-collection-day-espeon-p122331",
+    "https://www.ihrysko.sk/pokemon-30th-celebration-premium-collection-mega-ditto-ex-p122330",
+    "https://www.cardstore.cz/pokemon-tcg--30th-celebration-ultra-premium-collection--umbreon-/",
+    "https://www.cardstore.cz/pokemon-tcg--30th-celebration-ultra-premium-collection--espeon--/",
+    "https://www.gengar.cz/p/pokemon-30th-celebration-upc-ultra-premium-collection-umbreon?_fid=3909",
+    "https://www.gengar.cz/p/pokemon-30th-celebration-upc-ultra-premium-collection-espeon?_fid=ebb9",
+    "https://www.vesely-drak.cz/produkty/specialni-sety/19148-pokemon-30th-celebration-ditto-premium-collection/",
+    "https://www.vesely-drak.cz/produkty/boostery/19141-pokemon-30th-celebration-booster/",
+    "https://www.smarty.sk/Vyhladavanie?query=Pok%C3%A9mon%20TCG%3A%2030th%20Celebration",
+    "https://www.cardstore.cz/30-vyroci-pokemon-karet/",
 ]
 
 STATE_FILE = Path("state.json")

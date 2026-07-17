@@ -11,6 +11,7 @@ from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 
 URLS = [
     "https://www.alza.cz/search.htm?exps=Elite+Trainer+box",
+    "https://www.cdmc.cz/me05-pitch-black/",
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
     "https://www.alola.cz/elite-trainer-boxy/",

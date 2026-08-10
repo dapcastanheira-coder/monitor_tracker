@@ -12,33 +12,18 @@ from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 URLS = [
     "https://www.alza.cz/search.htm?exps=Elite+Trainer+box",
     "https://www.cdmc.cz/me05-pitch-black/",
-    "https://www.hrananetu.cz/pokemon#attrCh-16-335=1",
+    "https://www.hrananetu.cz/pokemon-trainer-boxy"
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
     "https://www.alola.cz/elite-trainer-boxy/",
     "https://www.kitstore.cz/elite-trainer-box",
     "https://www.cdmc.cz/premiove-kolekce/pokemon-tcg--first-partner-illustration-collection-series-3/",
-    "https://www.zardo.cards/predobjednavky",
     "https://www.cdmc.cz/sv10-destined-rivals/",
     "https://www.cdmc.cz/sv8-5-prismatic-evolutions/",
     "https://www.cdmc.cz/elite-trainer-boxy/",
     "https://www.smarty.sk/pokemon-tcg-30th-celebration-elite-trainer-box-4p278101",
-    "https://www.cardstore.cz/pokemon-tcg--30th-celebration-elite-trainer-box/",
-    "https://www.vesely-drak.cz/produkty/specialni-sety/19147-pokemon-30th-celebration-ultra-premium-collection-night/",
-    "https://www.vesely-drak.cz/produkty/specialni-sety/19146-pokemon-30th-celebration-ultra-premium-collection-day/",
     "https://www.xzone.cz/pokemon-tcg-elite-trainer-boxy?sort=date_desc&s=60&page=1&term=&c=946",
-    "https://www.smarty.sk/pokemon-tcg-30th-celebration-ultra-premium-collection-den-a-noc-4p278108",
-    "https://www.ihrysko.sk/pokemon-30th-celebration-ultra-premium-collection-night-umbreon-p122332",
-    "https://www.ihrysko.sk/pokemon-30th-celebration-ultra-premium-collection-day-espeon-p122331",
-    "https://www.ihrysko.sk/pokemon-30th-celebration-premium-collection-mega-ditto-ex-p122330",
-    "https://www.cardstore.cz/pokemon-tcg--30th-celebration-ultra-premium-collection--umbreon-/",
-    "https://www.cardstore.cz/pokemon-tcg--30th-celebration-ultra-premium-collection--espeon--/",
-    "https://www.gengar.cz/p/pokemon-30th-celebration-upc-ultra-premium-collection-umbreon?_fid=3909",
-    "https://www.gengar.cz/p/pokemon-30th-celebration-upc-ultra-premium-collection-espeon?_fid=ebb9",
-    "https://www.vesely-drak.cz/produkty/specialni-sety/19148-pokemon-30th-celebration-ditto-premium-collection/",
-    "https://www.vesely-drak.cz/produkty/boostery/19141-pokemon-30th-celebration-booster/",
     "https://www.smarty.sk/Vyhladavanie?query=Pok%C3%A9mon%20TCG%3A%2030th%20Celebration",
-    "https://www.cardstore.cz/30-vyroci-pokemon-karet/",
 ]
 
 STATE_FILE = Path("state.json")
@@ -49,10 +34,15 @@ NOT_AVAILABLE_PATTERNS = [
     r"Dostupnost:\s*na dotaz",
     r"Na eshopu nemáme dostupné",
     r"Hlídat produkt",
+    r"\bNení\s+skladem\b",
     r"\bPřipravujeme\b",
+    r"\bVyprodáno\b",
     r"\bOutOfStock\b",
     r"Produkt aktuálně nelze zakoupit",
     r"\bnelze\s+zakoupit\b",
+    r"\bOčakávame\b",
+    r"sledovať\s+dostupnosť",
+    
 ]
 
 AVAILABLE_PATTERNS = [
@@ -61,6 +51,9 @@ AVAILABLE_PATTERNS = [
     r"\bPřidat\s+do\s+košíku\b",
     r"\bInStock\b",
     r"\bAdd\s+to\s+cart\b",
+    r"(?<!Není\s)\bSkladem\b",
+    r"\bVložiť\s+do\s+košíka\b",
+    r"(?<!nie je\s)\bskladom\b",
 ]
 
 def telegram_send(text: str) -> None:
@@ -94,10 +87,65 @@ def is_available(url: str, html: str) -> bool:
             return True
         return False
 
+    # HranaNetu
+    if "hrananetu.cz" in host:
+        return bool(
+            re.search(
+                r"\b\d+\+?\s*ks\s+na\s+skladě\b",
+                html,
+                re.IGNORECASE,
+            )
+        )
+
+    # smarty sk
+    if "smarty.sk" in host and "vyhladavanie" in url.lower():
+    match = re.search(
+        r"\bSkladom\s+celkom\s+\((\d+)\)",
+        html,
+        re.IGNORECASE,
+    )
+
+    if match:
+        return int(match.group(1)) > 0
+
+    return False
+    
+    
+    # Vesely Drak:
+    # Ignore "Skladem" because "Vše skladem" is site-wide text.
+    if "vesely-drak.cz" in host:
+        # Strong negative signals first
+        if any(
+            re.search(p, html, re.IGNORECASE)
+            for p in [
+                r"Na eshopu nemáme dostupné",
+                r"Dočasně nedostupné",
+                r"prodej tohoto produktu již skončil",
+                r"Položka byla vyprodána",
+            ]
+        ):
+            return False
+
+        
+        # Then actual purchase signals
+        return any(
+            re.search(p, html, re.IGNORECASE)
+            for p in [
+                r"\bDo\s+košíku\b",
+                r"\bVložit\s+do\s+košíku\b",
+                r"\bPřidat\s+do\s+košíku\b",
+            ]
+        )
+
+    # If ANY positive availability signal exists, return True
+    if any(re.search(p, html, re.IGNORECASE) for p in AVAILABLE_PATTERNS):
+        return True
+
+    # Otherwise, negative signals mean unavailable
     if any(re.search(p, html, re.IGNORECASE) for p in NOT_AVAILABLE_PATTERNS):
         return False
 
-    return any(re.search(p, html, re.IGNORECASE) for p in AVAILABLE_PATTERNS)
+    return False
 
 def fetch_rendered_html(url: str, timeout_ms: int = 25000) -> str:
     """

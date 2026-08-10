@@ -12,7 +12,7 @@ from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 URLS = [
     "https://www.alza.cz/search.htm?exps=Elite+Trainer+box",
     "https://www.cdmc.cz/me05-pitch-black/",
-    "https://www.hrananetu.cz/pokemon-trainer-boxy"
+    "https://www.hrananetu.cz/pokemon-trainer-boxy",
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
     "https://www.alola.cz/elite-trainer-boxy/",
@@ -79,7 +79,7 @@ def save_state(state: Dict[str, str]) -> None:
 def is_available(url: str, html: str) -> bool:
     host = urlparse(url).netloc.lower()
 
-    # Xzone: schema markers are the best signal
+    # Xzone
     if "xzone.cz" in host:
         if re.search(r"\bOutOfStock\b", html, re.IGNORECASE):
             return False
@@ -97,24 +97,21 @@ def is_available(url: str, html: str) -> bool:
             )
         )
 
-    # smarty sk
+    # Smarty.sk search page
     if "smarty.sk" in host and "vyhladavanie" in url.lower():
-    match = re.search(
-        r"\bSkladom\s+celkom\s+\((\d+)\)",
-        html,
-        re.IGNORECASE,
-    )
+        match = re.search(
+            r"\bSkladom\s+celkom\s+\((\d+)\)",
+            html,
+            re.IGNORECASE,
+        )
 
-    if match:
-        return int(match.group(1)) > 0
+        if match:
+            return int(match.group(1)) > 0
 
-    return False
-    
-    
-    # Vesely Drak:
-    # Ignore "Skladem" because "Vše skladem" is site-wide text.
+        return False
+
+    # Vesely Drak
     if "vesely-drak.cz" in host:
-        # Strong negative signals first
         if any(
             re.search(p, html, re.IGNORECASE)
             for p in [
@@ -126,8 +123,6 @@ def is_available(url: str, html: str) -> bool:
         ):
             return False
 
-        
-        # Then actual purchase signals
         return any(
             re.search(p, html, re.IGNORECASE)
             for p in [
@@ -137,11 +132,10 @@ def is_available(url: str, html: str) -> bool:
             ]
         )
 
-    # If ANY positive availability signal exists, return True
+    # All other sites
     if any(re.search(p, html, re.IGNORECASE) for p in AVAILABLE_PATTERNS):
         return True
 
-    # Otherwise, negative signals mean unavailable
     if any(re.search(p, html, re.IGNORECASE) for p in NOT_AVAILABLE_PATTERNS):
         return False
 

@@ -14,6 +14,7 @@ URLS = [
     "https://www.cdmc.cz/me05-pitch-black/",
     "https://www.smarty.cz/Pokemon-TCG-SV10-Destined-Rivals-Booster-4p225223",
     "https://www.smarty.cz/elite-trainer-box-4c14603",
+    "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Elite-Trainer-Box-4p278101",
     "https://www.hrananetu.cz/pokemon-trainer-boxy",
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",

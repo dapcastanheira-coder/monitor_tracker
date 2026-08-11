@@ -10,21 +10,29 @@ import requests
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 
 URLS = [
-    "https://www.alza.cz/search.htm?exps=Elite+Trainer+box",
-    "https://www.cdmc.cz/me05-pitch-black/",
-    "https://www.smarty.cz/Pokemon-TCG-SV10-Destined-Rivals-Booster-4p225223",
-    "https://www.smarty.cz/elite-trainer-box-4c14603",
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Elite-Trainer-Box-4p278101",
-    "https://www.hrananetu.cz/pokemon-trainer-boxy",
+    "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Booster-Bundle-4p278104",
+
+    "https://www.hrananetu.cz/p/pokemon-30th-celebration-elite-trainer-box",
+    "https://www.hrananetu.cz/p/pokemon-30th-celebration-booster-bundle",
+
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
+    "https://www.vesely-drak.cz/produkty/booster-boxy/19140-pokemon-30th-celebration-booster-bundle/",
+
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
+    "https://www.ihrysko.sk/pokemon-30th-celebration-booster-bundle-p122317",
+    
+    "https://www.alza.cz/search.htm?exps=Elite+Trainer+box",
+    
+    "https://www.planetaher.cz/pokemon-tcg--destined-rivals-elite-trainer-box/",
+    
+    "https://www.smarty.cz/elite-trainer-box-4c14603",
+    
     "https://www.alola.cz/elite-trainer-boxy/",
     "https://www.kitstore.cz/elite-trainer-box",
-    "https://www.cdmc.cz/premiove-kolekce/pokemon-tcg--first-partner-illustration-collection-series-3/",
     "https://www.cdmc.cz/sv10-destined-rivals/",
-    "https://www.cdmc.cz/sv8-5-prismatic-evolutions/",
     "https://www.cdmc.cz/elite-trainer-boxy/",
-    "https://www.smarty.sk/pokemon-tcg-30th-celebration-elite-trainer-box-4p278101",
+
     "https://www.xzone.cz/pokemon-tcg-elite-trainer-boxy?sort=date_desc&s=60&page=1&term=&c=946",
     "https://www.smarty.sk/Vyhladavanie?query=Pok%C3%A9mon%20TCG%3A%2030th%20Celebration",
 ]

@@ -4,7 +4,7 @@ import re
 import time
 from pathlib import Path
 from typing import Dict, Optional
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 import requests
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError

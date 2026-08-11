@@ -19,6 +19,24 @@ URLS = [
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
     "https://www.vesely-drak.cz/produkty/booster-boxy/19140-pokemon-30th-celebration-booster-bundle/",
 
+    # Gengar.cz
+    "https://www.gengar.cz/p/pokemon-30th-anniversary-elite-trainer-box-etb",
+    "https://www.gengar.cz/p/pokemon-30th-celebration-booster-bundle",
+
+    # Chaotit.cz
+    "https://www.chaotit.cz/pokemon-tcg-30th-celebration-elite-trainer-box/",
+
+    # KralKaret.cz
+    "https://kralkaret.cz/products/test-predobjednavka",
+
+    # PGS.sk
+    "https://www.pgs.sk/Pokemon-TCG-30th-Celebration-Elite-Trainer-Box-4p278101",
+    "https://www.pgs.sk/pokemon-tcg-30-vyrocie-booster-bundle-4p278104",
+
+    # Vesely Drak Slovakia
+    "https://www.vesely-drak.sk/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
+    "https://www.vesely-drak.sk/produkty/booster-boxy/19140-pokemon-30th-celebration-booster-bundle/",
+    
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
     "https://www.ihrysko.sk/pokemon-30th-celebration-booster-bundle-p122317",
     

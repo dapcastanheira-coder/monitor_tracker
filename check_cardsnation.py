@@ -11,38 +11,29 @@ from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 
 URLS = [
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Elite-Trainer-Box-4p278101",
-    "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Booster-Bundle-4p278104",
 
     "https://www.hrananetu.cz/p/pokemon-30th-celebration-elite-trainer-box",
-    "https://www.hrananetu.cz/p/pokemon-30th-celebration-booster-bundle",
-
-    "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
-    "https://www.vesely-drak.cz/produkty/booster-boxy/19140-pokemon-30th-celebration-booster-bundle/",
-
-    # PGS.sk
-    "https://www.pgs.sk/Pokemon-TCG-30th-Celebration-Elite-Trainer-Box-4p278101",
-    "https://www.pgs.sk/pokemon-tcg-30-vyrocie-booster-bundle-4p278104",
-
-    # Vesely Drak Slovakia
-    "https://www.vesely-drak.sk/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
-    "https://www.vesely-drak.sk/produkty/booster-boxy/19140-pokemon-30th-celebration-booster-bundle/",
     
+    "https://www.cdmc.cz/elite-trainer-boxy/pokemon-tcg--30th-celebration-elite-trainer-box/",
+
+    
+    "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
+    "https://www.cdmc.cz/tiny--plechovky/pokemon-tcg--30th-celebration-tin-sylveon-ex-2/",
+    "https://www.cdmc.cz/tiny--plechovky/pokemon-tcg--30th-celebration-tin-greninja-ex-1/",
+    "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-2-Pack-Blister-4p278095",
+    "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Greninja-ex-Box-4p278100",
+    "https://www.hrananetu.cz/p/pokemon-celebration-ditto-premium-collection",
+    "https://www.xzone.cz/karetni-hra-pokemon-tcg-30th-celebration-celebration-tin-greninja-ex",
+    "https://www.xzone.cz/karetni-hra-pokemon-tcg-30th-celebration-celebration-tin-sylveon-ex",
+    "https://www.xzone.cz/karetni-hra-pokemon-tcg-30th-celebration-elite-trainer-box",
+    
+   
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
     "https://www.ihrysko.sk/pokemon-30th-celebration-booster-bundle-p122317",
     
     "https://www.alza.cz/search.htm?exps=Elite+Trainer+box",
-    
-    "https://www.planetaher.cz/pokemon-tcg--destined-rivals-elite-trainer-box/",
-    
-    "https://www.smarty.cz/elite-trainer-box-4c14603",
-    
-    "https://www.alola.cz/elite-trainer-boxy/",
-    "https://www.kitstore.cz/elite-trainer-box",
-    "https://www.cdmc.cz/sv10-destined-rivals/",
-    "https://www.cdmc.cz/elite-trainer-boxy/",
-
-    "https://www.xzone.cz/pokemon-tcg-elite-trainer-boxy?sort=date_desc&s=60&page=1&term=&c=946",
-    "https://www.smarty.sk/Vyhladavanie?query=Pok%C3%A9mon%20TCG%3A%2030th%20Celebration",
+ 
+  
 ]
 
 STATE_FILE = Path("state.json")

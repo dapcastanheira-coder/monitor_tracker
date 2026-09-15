@@ -17,7 +17,6 @@ URLS = [
     "https://www.cdmc.cz/elite-trainer-boxy/pokemon-tcg--30th-celebration-elite-trainer-box/",
 
     "https://www.cdmc.cz/blistery/pokemon-tcg--30th-celebration-2-pack-blister-eevee/",
-    "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
     "https://www.cdmc.cz/tiny--plechovky/pokemon-tcg--30th-celebration-tin-sylveon-ex-2/",
     "https://www.cdmc.cz/tiny--plechovky/pokemon-tcg--30th-celebration-tin-greninja-ex-1/",
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-2-Pack-Blister-4p278095",
@@ -25,7 +24,6 @@ URLS = [
     "https://www.hrananetu.cz/p/pokemon-celebration-ditto-premium-collection",
     "https://www.xzone.cz/karetni-hra-pokemon-tcg-30th-celebration-celebration-tin-greninja-ex",
     "https://www.xzone.cz/karetni-hra-pokemon-tcg-30th-celebration-celebration-tin-sylveon-ex",
-    "https://www.xzone.cz/karetni-hra-pokemon-tcg-30th-celebration-elite-trainer-box",
     
    
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",

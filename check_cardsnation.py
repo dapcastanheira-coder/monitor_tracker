@@ -16,7 +16,7 @@ URLS = [
     
     "https://www.cdmc.cz/elite-trainer-boxy/pokemon-tcg--30th-celebration-elite-trainer-box/",
 
-    
+    "https://www.cdmc.cz/blistery/pokemon-tcg--30th-celebration-2-pack-blister-eevee/",
     "https://www.vesely-drak.cz/produkty/pokemon-elite-trainer-box/19132-pokemon-30th-celebration-elite-trainer-box/",
     "https://www.cdmc.cz/tiny--plechovky/pokemon-tcg--30th-celebration-tin-sylveon-ex-2/",
     "https://www.cdmc.cz/tiny--plechovky/pokemon-tcg--30th-celebration-tin-greninja-ex-1/",

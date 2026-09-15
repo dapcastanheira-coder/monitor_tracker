@@ -17,8 +17,8 @@ URLS = [
     "https://www.cdmc.cz/elite-trainer-boxy/pokemon-tcg--30th-celebration-elite-trainer-box/",
 
     "https://www.cdmc.cz/blistery/pokemon-tcg--30th-celebration-2-pack-blister-eevee/",
-    "https://www.cdmc.cz/tiny--plechovky/pokemon-tcg--30th-celebration-tin-sylveon-ex-2/",
-    "https://www.cdmc.cz/tiny--plechovky/pokemon-tcg--30th-celebration-tin-greninja-ex-1/",
+    "https://cernyrytir.cz/merch/detail/47517394-b620-4713-8389-ce5779d94441",
+   
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-2-Pack-Blister-4p278095",
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Greninja-ex-Box-4p278100",
     "https://www.hrananetu.cz/p/pokemon-celebration-ditto-premium-collection",

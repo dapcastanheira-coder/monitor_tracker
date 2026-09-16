@@ -38,6 +38,7 @@ URLS = [
     "https://www.alza.cz/EN/toys/pokemon-tcg-30th-celebration-elite-trainer-box-d13521013.htm",
     "https://www.alza.cz/EN/toys/pokemon-tcg-30th-celebration-ex-tin-d13521014.htm",
     "https://www.alza.cz/EN/toys/pokemon-30th-celebration/18924117.htm",
+    "https://www.alza.cz/EN/toys/pokemon-tcg-30th-celebration-2-pack-blister-d13521015.htm",
     
 ]
 

@@ -31,10 +31,8 @@ URLS = [
     "https://cernyrytir.cz/merch/detail/47517394-b620-4713-8389-ce5779d94441",
 
     # Alza
-    "https://www.alza.cz/EN/toys/pokemon-tcg-30th-celebration-elite-trainer-box-d13521013.htm",
-    "https://www.alza.cz/EN/toys/pokemon-tcg-30th-celebration-ex-tin-d13521014.htm",
-    "https://www.alza.cz/EN/toys/pokemon-30th-celebration/18924117.htm",
-    "https://www.alza.cz/EN/toys/pokemon-tcg-30th-celebration-2-pack-blister-d13521015.htm",
+    "https://www.alza.cz/hracky/pokemon-tcg-30th-celebration-elite-trainer-box-d13521013.htm",
+    "https://www.alza.cz/hracky/pokemon-tcg-30th-celebration-2-pack-blister-d13521015.htm",
 
     # Rohlík
     "https://www.rohlik.cz/1483651-pokemon-tcg-30th-celebration-elite-trainer-box",

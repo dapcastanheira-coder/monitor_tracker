@@ -35,7 +35,7 @@ URLS = [
     "https://www.ihrysko.sk/pokemon-30th-celebration-elite-trainer-box-p122315",
     "https://www.ihrysko.sk/pokemon-30th-celebration-booster-bundle-p122317",
 
-    "https://www.alza.cz/search.htm?exps=Elite+Trainer+box",
+    "https://www.alza.cz/EN/toys/pokemon-tcg-30th-celebration-elite-trainer-box-d13521013.htm",
 ]
 
 

@@ -104,7 +104,26 @@ def telegram_send(text: str) -> None:
     )
 
     response.raise_for_status()
+def send_heartbeat(state):
+    current_hour = time.strftime("%Y-%m-%d %H")
 
+    # Only send one heartbeat per hour
+    if state.get("_last_heartbeat_hour") == current_hour:
+        return
+
+    message = (
+        "🟢 POKÉMON MONITOR HEARTBEAT\n\n"
+        f"Checked products: {len(URLS)}\n"
+        f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        "Monitor is running."
+    )
+
+    try:
+        telegram_send(message)
+        state["_last_heartbeat_hour"] = current_hour
+        print("Heartbeat sent.")
+    except Exception as e:
+        print(f"Heartbeat failed: {e}")
 
 # ============================================================
 # STATE
@@ -243,6 +262,8 @@ def fetch_page(page, url):
 def main():
 
     state = load_state()
+
+    send_heartbeat(state)
 
     newly_available = []
 

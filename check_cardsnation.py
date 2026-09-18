@@ -26,6 +26,7 @@ URLS = [
 
     # Černý rytíř
     "https://cernyrytir.cz/merch/detail/47517394-b620-4713-8389-ce5779d94441",
+    "https://cernyrytir.cz/merch/detail/1c1a80b4-2f16-4e22-89bb-517d847ab016",
 
     # Alza
     "https://www.alza.cz/hracky/pokemon-tcg-30th-celebration-elite-trainer-box-d13521013.htm",

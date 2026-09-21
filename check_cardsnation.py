@@ -34,9 +34,6 @@ URLS = [
     # Rohlík
     "https://www.rohlik.cz/1483651-pokemon-tcg-30th-celebration-elite-trainer-box",
     "https://www.rohlik.cz/1483649-pokemon-tcg-30th-celebration-sylveon-ex-box",
-
-    # Planeta her
-    # Add the verified URL here once confirmed.
 ]
 
 
@@ -48,7 +45,7 @@ STATE_FILE = Path("state.json")
 
 
 # ============================================================
-# STOCK WORDS
+# GENERIC STOCK WORDS
 # ============================================================
 
 AVAILABLE_PATTERNS = [
@@ -64,6 +61,7 @@ AVAILABLE_PATTERNS = [
     r"\bskladě\b",
     r"\bskladom\b",
 ]
+
 
 NOT_AVAILABLE_PATTERNS = [
     r"\bNení\s+skladem\b",
@@ -91,6 +89,7 @@ NOT_AVAILABLE_PATTERNS = [
 # ============================================================
 
 def telegram_send(text: str) -> None:
+
     token = os.environ["TELEGRAM_BOT_TOKEN"]
     chat_id = os.environ["TELEGRAM_CHAT_ID"]
 
@@ -105,7 +104,14 @@ def telegram_send(text: str) -> None:
     )
 
     response.raise_for_status()
+
+
+# ============================================================
+# HEARTBEAT
+# ============================================================
+
 def send_heartbeat(state):
+
     current_hour = time.strftime("%Y-%m-%d %H")
 
     # Only send one heartbeat per hour
@@ -120,29 +126,43 @@ def send_heartbeat(state):
     )
 
     try:
+
         telegram_send(message)
+
         state["_last_heartbeat_hour"] = current_hour
+
         print("Heartbeat sent.")
+
     except Exception as e:
+
         print(f"Heartbeat failed: {e}")
+
 
 # ============================================================
 # STATE
 # ============================================================
 
 def load_state():
+
     if STATE_FILE.exists():
+
         try:
+
             return json.loads(
-                STATE_FILE.read_text(encoding="utf-8")
+                STATE_FILE.read_text(
+                    encoding="utf-8"
+                )
             )
+
         except Exception:
+
             return {}
 
     return {}
 
 
 def save_state(state):
+
     STATE_FILE.write_text(
         json.dumps(
             state,
@@ -158,11 +178,18 @@ def save_state(state):
 # ============================================================
 
 def normalize(text):
+
     text = text.replace("\xa0", " ")
-    return re.sub(r"\s+", " ", text).strip()
+
+    return re.sub(
+        r"\s+",
+        " ",
+        text
+    ).strip()
 
 
 def product_name(url):
+
     host = urlparse(url).netloc.lower()
 
     if "smarty.cz" in host:
@@ -190,42 +217,554 @@ def product_name(url):
 
 
 # ============================================================
-# STOCK CHECK
+# CDMC DETECTOR
 # ============================================================
 
-def is_available(url, html):
+def is_cdmc_available(page):
 
-    host = urlparse(url).netloc.lower()
+    print("  CDMC detector: checking purchase button...")
 
     # --------------------------------------------------------
-    # First: explicit OUT OF STOCK
+    # PRIMARY SIGNAL
+    #
+    # Look for the ACTUAL visible purchase button.
+    # --------------------------------------------------------
+
+    try:
+
+        buttons = page.locator(
+            "button, a, input[type='submit']"
+        ).filter(
+            has_text=re.compile(
+                r"PŘIDAT\s+DO\s+KOŠÍKU",
+                re.IGNORECASE
+            )
+        )
+
+        count = buttons.count()
+
+        for i in range(count):
+
+            element = buttons.nth(i)
+
+            try:
+
+                if not element.is_visible():
+                    continue
+
+                # If it is a button, make sure it is enabled.
+                tag = element.evaluate(
+                    "(el) => el.tagName.toLowerCase()"
+                )
+
+                if tag == "button":
+
+                    if not element.is_enabled():
+                        continue
+
+                print(
+                    "  CDMC detector: "
+                    "VISIBLE + ENABLED 'PŘIDAT DO KOŠÍKU'"
+                )
+
+                return True
+
+            except Exception:
+                continue
+
+    except Exception as e:
+
+        print(
+            f"  CDMC button check failed: {e}"
+        )
+
+    # --------------------------------------------------------
+    # SECONDARY SIGNAL
+    #
+    # Look at VISIBLE body text only.
+    #
+    # This catches:
+    # Skladem (1 ks)
+    # Skladem (2 ks)
+    # Skladem (6 ks)
+    # Skladem (>15 ks)
+    # --------------------------------------------------------
+
+    try:
+
+        body_text = normalize(
+            page.locator("body").inner_text()
+        )
+
+        if re.search(
+            r"\bSkladem\s*\(\s*(?:\d+|>\s*\d+)\s*ks\s*\)",
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            print(
+                "  CDMC detector: "
+                "VISIBLE 'Skladem (X ks)'"
+            )
+
+            return True
+
+    except Exception as e:
+
+        print(
+            f"  CDMC body check failed: {e}"
+        )
+
+    print(
+        "  CDMC detector: NOT AVAILABLE"
+    )
+
+    return False
+
+
+# ============================================================
+# SMARTY DETECTOR
+# ============================================================
+
+def is_smarty_available(page):
+
+    try:
+
+        body_text = normalize(
+            page.locator("body").inner_text()
+        )
+
+    except Exception as e:
+
+        print(
+            f"  Smarty body check failed: {e}"
+        )
+
+        return False
+
+    # --------------------------------------------------------
+    # IMPORTANT:
+    #
+    # "Dostupné na prodejně" means store availability.
+    # It is NOT treated as online stock here.
+    # --------------------------------------------------------
+
+    if re.search(
+        r"\bDostupné\s+na\s+prodejně\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        print(
+            "  Smarty: 'Dostupné na prodejně' "
+            "detected (NOT online stock)"
+        )
+
+    # --------------------------------------------------------
+    # Explicit unavailable states
     # --------------------------------------------------------
 
     for pattern in NOT_AVAILABLE_PATTERNS:
-        if re.search(pattern, html, re.IGNORECASE):
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            print(
+                f"  Smarty: unavailable pattern: {pattern}"
+            )
+
             return False
 
     # --------------------------------------------------------
-    # Then: explicit IN STOCK
+    # Online stock
     # --------------------------------------------------------
 
-    for pattern in AVAILABLE_PATTERNS:
-        if re.search(pattern, html, re.IGNORECASE):
-            return True
+    if re.search(
+        r"\bSkladem\b",
+        body_text,
+        re.IGNORECASE,
+    ):
 
-    # --------------------------------------------------------
-    # Hrananetu
-    # --------------------------------------------------------
-
-    if "hrananetu.cz" in host:
+        # If only store availability is shown,
+        # don't call it online stock.
         if re.search(
-            r"\b\d+\+?\s*ks\s+na\s+skladě\b",
-            html,
+            r"\bDostupné\s+na\s+prodejně\b",
+            body_text,
+            re.IGNORECASE,
+        ) and not re.search(
+            r"\bSkladem\s+(?:celkem\s+)?(?:>|≥)?\s*\d+",
+            body_text,
             re.IGNORECASE,
         ):
+
+            print(
+                "  Smarty: only store stock"
+            )
+
+            return False
+
+        print(
+            "  Smarty: online stock detected"
+        )
+
+        return True
+
+    return False
+
+
+# ============================================================
+# HRANANETU DETECTOR
+# ============================================================
+
+def is_hrananetu_available(page):
+
+    try:
+
+        body_text = normalize(
+            page.locator("body").inner_text()
+        )
+
+    except Exception as e:
+
+        print(
+            f"  Hrananetu body check failed: {e}"
+        )
+
+        return False
+
+    # Explicit unavailable
+    if re.search(
+        r"\bNení\s+skladem\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        return False
+
+    # Specific stock format
+    if re.search(
+        r"\b\d+\+?\s*ks\s+na\s+skladě\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        return True
+
+    # Generic stock
+    if re.search(
+        r"\bSkladem\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        return True
+
+    return False
+
+
+# ============================================================
+# ROHLÍK DETECTOR
+# ============================================================
+
+def is_rohlik_available(page):
+
+    try:
+
+        body_text = normalize(
+            page.locator("body").inner_text()
+        )
+
+    except Exception as e:
+
+        print(
+            f"  Rohlík body check failed: {e}"
+        )
+
+        return False
+
+    # Strong unavailable signals
+    if re.search(
+        r"\bVyprodáno\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        return False
+
+    if re.search(
+        r"\bNení\s+dostupné\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        return False
+
+    if re.search(
+        r"\bNelze\s+zakoupit\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        return False
+
+    # Rohlík purchase controls
+    purchase_patterns = [
+        r"Do\s+košíku",
+        r"Přidat\s+do\s+košíku",
+        r"Koupit",
+        r"Objednat",
+    ]
+
+    for pattern in purchase_patterns:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
             return True
 
     return False
+
+
+# ============================================================
+# ALZA DETECTOR
+# ============================================================
+
+def is_alza_available(page):
+
+    try:
+
+        body_text = normalize(
+            page.locator("body").inner_text()
+        )
+
+    except Exception as e:
+
+        print(
+            f"  Alza body check failed: {e}"
+        )
+
+        return False
+
+    # Strong unavailable states
+    unavailable = [
+        r"Není skladem",
+        r"Neni skladem",
+        r"Vyprodáno",
+        r"Vyprodano",
+        r"Momentálně nedostupné",
+        r"Momentálně vyprodáno",
+        r"Nelze objednat",
+    ]
+
+    for pattern in unavailable:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            return False
+
+    # Actual purchase signals
+    purchase_patterns = [
+        r"Do košíku",
+        r"Přidat do košíku",
+        r"Koupit",
+    ]
+
+    for pattern in purchase_patterns:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            return True
+
+    # Skladem is also valid
+    if re.search(
+        r"\bSkladem\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        return True
+
+    return False
+
+
+# ============================================================
+# ČERNÝ RYTÍŘ DETECTOR
+# ============================================================
+
+def is_cernyrytir_available(page):
+
+    try:
+
+        body_text = normalize(
+            page.locator("body").inner_text()
+        )
+
+    except Exception as e:
+
+        print(
+            f"  Černý rytíř body check failed: {e}"
+        )
+
+        return False
+
+    # Explicit unavailable
+    unavailable_patterns = [
+        r"Není skladem",
+        r"Neni skladem",
+        r"Vyprodáno",
+        r"Vyprodano",
+        r"Momentálně nedostupné",
+        r"Momentálně vyprodáno",
+        r"Nelze zakoupit",
+    ]
+
+    for pattern in unavailable_patterns:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            return False
+
+    # Purchase signals
+    purchase_patterns = [
+        r"Do košíku",
+        r"Přidat do košíku",
+        r"Koupit",
+        r"Objednat",
+    ]
+
+    for pattern in purchase_patterns:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            return True
+
+    # Stock text
+    if re.search(
+        r"\bSkladem\b",
+        body_text,
+        re.IGNORECASE,
+    ):
+
+        return True
+
+    return False
+
+
+# ============================================================
+# GENERIC DETECTOR
+# ============================================================
+
+def is_generic_available(page):
+
+    try:
+
+        body_text = normalize(
+            page.locator("body").inner_text()
+        )
+
+    except Exception as e:
+
+        print(
+            f"  Generic body check failed: {e}"
+        )
+
+        return False
+
+    # --------------------------------------------------------
+    # IMPORTANT:
+    #
+    # We now inspect VISIBLE BODY TEXT.
+    # We no longer inspect page.content().
+    #
+    # This prevents hidden HTML from falsely saying
+    # "Není skladem".
+    # --------------------------------------------------------
+
+    for pattern in NOT_AVAILABLE_PATTERNS:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            return False
+
+    for pattern in AVAILABLE_PATTERNS:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            return True
+
+    return False
+
+
+# ============================================================
+# MASTER STOCK CHECK
+# ============================================================
+
+def check_availability(page, url):
+
+    host = urlparse(url).netloc.lower()
+
+    # CDMC
+    if "cdmc.cz" in host:
+
+        return is_cdmc_available(page)
+
+    # Smarty
+    if "smarty.cz" in host:
+
+        return is_smarty_available(page)
+
+    # Hrananetu
+    if "hrananetu.cz" in host:
+
+        return is_hrananetu_available(page)
+
+    # Rohlík
+    if "rohlik.cz" in host:
+
+        return is_rohlik_available(page)
+
+    # Alza
+    if "alza.cz" in host:
+
+        return is_alza_available(page)
+
+    # Černý rytíř
+    if "cernyrytir.cz" in host:
+
+        return is_cernyrytir_available(page)
+
+    # Everything else
+    return is_generic_available(page)
 
 
 # ============================================================
@@ -237,6 +776,7 @@ def fetch_page(page, url):
     print(f"Checking: {url}")
 
     try:
+
         page.goto(
             url,
             wait_until="domcontentloaded",
@@ -244,16 +784,23 @@ def fetch_page(page, url):
         )
 
     except PWTimeoutError:
-        print("  Page timeout - using loaded page")
+
+        print(
+            "  Page timeout - using loaded page"
+        )
 
     except Exception as e:
-        print(f"  ERROR loading page: {e}")
-        return None
 
-    # Give JavaScript a moment to render stock information.
+        print(
+            f"  ERROR loading page: {e}"
+        )
+
+        return False
+
+    # Allow JavaScript to render.
     page.wait_for_timeout(2000)
 
-    return page.content()
+    return True
 
 
 # ============================================================
@@ -275,8 +822,11 @@ def main():
         )
 
         context = browser.new_context(
+
             locale="cs-CZ",
+
             timezone_id="Europe/Prague",
+
             user_agent=(
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                 "AppleWebKit/537.36 "
@@ -284,6 +834,7 @@ def main():
                 "Chrome/140.0.0.0 "
                 "Safari/537.36"
             ),
+
             viewport={
                 "width": 1440,
                 "height": 1000,
@@ -294,36 +845,53 @@ def main():
 
         for url in URLS:
 
-            previous = state.get(url, "unknown")
+            previous = state.get(
+                url,
+                "unknown"
+            )
 
             try:
 
-                html = fetch_page(
+                loaded = fetch_page(
                     page,
-                    url,
+                    url
                 )
 
-                if html is None:
-                    print("  Could not check")
+                if not loaded:
+
+                    print(
+                        "  Could not check"
+                    )
+
                     continue
+
+                # --------------------------------------------
+                # STORE-SPECIFIC DETECTION
+                # --------------------------------------------
+
+                available = check_availability(
+                    page,
+                    url
+                )
 
                 now = (
                     "available"
-                    if is_available(url, html)
+                    if available
                     else "not_available"
                 )
 
                 print(
-                    f"  {product_name(url)} => {now}"
-                    f"  (previous: {previous})"
+                    f"  {product_name(url)} => "
+                    f"{now} "
+                    f"(previous: {previous})"
                 )
 
-                # ------------------------------------------------
-                # ONLY ALERT ON:
+                # --------------------------------------------
+                # ALERT ONLY ON:
                 #
-                # not available -> available
+                # not_available -> available
                 #
-                # ------------------------------------------------
+                # --------------------------------------------
 
                 if (
                     previous != "available"
@@ -338,6 +906,10 @@ def main():
                         )
                     )
 
+                    print(
+                        "  🚨 NEW STOCK DETECTED!"
+                    )
+
                 state[url] = now
 
             except Exception as e:
@@ -346,7 +918,7 @@ def main():
                     f"  ERROR checking {url}: {e}"
                 )
 
-                # Keep previous state if checking failed.
+                # Keep previous state if check failed.
                 continue
 
             # Small delay between websites.
@@ -356,7 +928,7 @@ def main():
         browser.close()
 
     # ========================================================
-    # SEND TELEGRAM ONLY IF SOMETHING BECAME AVAILABLE
+    # SEND TELEGRAM
     # ========================================================
 
     if newly_available:
@@ -366,14 +938,32 @@ def main():
             + "\n\n".join(newly_available)
         )
 
-        print("\nSENDING TELEGRAM ALERT...")
+        print(
+            "\nSENDING TELEGRAM ALERT..."
+        )
+
         print(message)
 
-        telegram_send(message)
+        try:
+
+            telegram_send(message)
+
+            print(
+                "Telegram alert sent."
+            )
+
+        except Exception as e:
+
+            print(
+                f"Telegram failed: {e}"
+            )
 
     else:
 
-        print("\nNo new stock. No notification sent.")
+        print(
+            "\nNo new stock. "
+            "No notification sent."
+        )
 
     save_state(state)
 
@@ -383,4 +973,5 @@ def main():
 # ============================================================
 
 if __name__ == "__main__":
+
     main()

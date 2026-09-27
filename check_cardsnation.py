@@ -31,6 +31,8 @@ URLS = [
 
     # Centroxogo - Portugal
     "https://www.centroxogo.pt/pokemon-tcg-30th-celebration-elite-trainer-box-003pc10447101.html",
+    "https://www.centroxogo.pt/brinquedos-personagem/pokemon/cartas-tcg-pokemon/pokemon-tcg-30th-celebration-booster-bundle-003pc10451101.html",
+    
 ]
 
 

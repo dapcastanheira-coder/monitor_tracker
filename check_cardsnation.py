@@ -18,12 +18,6 @@ URLS = [
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Elite-Trainer-Box-4p278101",
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Greninja-ex-Box-4p278100",
 
-    # Hrananetu
-    "https://www.hrananetu.cz/p/pokemon-30th-celebration-elite-trainer-box",
-
-    # CDMC
-    "https://www.cdmc.cz/elite-trainer-boxy/pokemon-tcg--30th-celebration-elite-trainer-box/",
-
     # Černý rytíř
     "https://cernyrytir.cz/merch/detail/47517394-b620-4713-8389-ce5779d94441",
     "https://cernyrytir.cz/merch/detail/1c1a80b4-2f16-4e22-89bb-517d847ab016",
@@ -34,6 +28,9 @@ URLS = [
     # Rohlík
     "https://www.rohlik.cz/1483651-pokemon-tcg-30th-celebration-elite-trainer-box",
     "https://www.rohlik.cz/1483649-pokemon-tcg-30th-celebration-sylveon-ex-box",
+
+    # Centroxogo - Portugal
+    "https://www.centroxogo.pt/pokemon-tcg-30th-celebration-elite-trainer-box-003pc10447101.html",
 ]
 
 
@@ -42,46 +39,6 @@ URLS = [
 # ============================================================
 
 STATE_FILE = Path("state.json")
-
-
-# ============================================================
-# GENERIC STOCK WORDS
-# ============================================================
-
-AVAILABLE_PATTERNS = [
-    r"\bDo\s+košíku\b",
-    r"\bVložit\s+do\s+košíku\b",
-    r"\bPřidat\s+do\s+košíku\b",
-    r"\bDo\s+košíka\b",
-    r"\bVložiť\s+do\s+košíka\b",
-    r"\bAdd\s+to\s+cart\b",
-    r"\bInStock\b",
-    r"\bSkladem\b",
-    r"\bSkladom\b",
-    r"\bskladě\b",
-    r"\bskladom\b",
-]
-
-
-NOT_AVAILABLE_PATTERNS = [
-    r"\bNení\s+skladem\b",
-    r"\bNeni\s+skladem\b",
-    r"\bNie\s+je\s+skladom\b",
-    r"\bVyprodáno\b",
-    r"\bVyprodany\b",
-    r"\bPoložka byla vyprodána\b",
-    r"\bThe item has been sold out\b",
-    r"\bOutOfStock\b",
-    r"\bOut of stock\b",
-    r"\bSold out\b",
-    r"\bPřipravujeme\b",
-    r"\bna dotaz\b",
-    r"\bHlídat produkt\b",
-    r"\bNení dostupné\b",
-    r"\bnení dostupné\b",
-    r"\bNelze zakoupit\b",
-    r"\bnelze zakoupit\b",
-]
 
 
 # ============================================================
@@ -126,7 +83,6 @@ def send_heartbeat(state):
     )
 
     try:
-
         telegram_send(message)
 
         state["_last_heartbeat_hour"] = current_hour
@@ -134,7 +90,6 @@ def send_heartbeat(state):
         print("Heartbeat sent.")
 
     except Exception as e:
-
         print(f"Heartbeat failed: {e}")
 
 
@@ -147,7 +102,6 @@ def load_state():
     if STATE_FILE.exists():
 
         try:
-
             return json.loads(
                 STATE_FILE.read_text(
                     encoding="utf-8"
@@ -155,7 +109,6 @@ def load_state():
             )
 
         except Exception:
-
             return {}
 
     return {}
@@ -195,12 +148,6 @@ def product_name(url):
     if "smarty.cz" in host:
         return "Smarty"
 
-    if "hrananetu.cz" in host:
-        return "Hrananetu"
-
-    if "cdmc.cz" in host:
-        return "CDMC"
-
     if "cernyrytir.cz" in host:
         return "Černý rytíř"
 
@@ -210,116 +157,10 @@ def product_name(url):
     if "rohlik.cz" in host:
         return "Rohlík"
 
-    if "planetaher.cz" in host:
-        return "Planeta her"
+    if "centroxogo.pt" in host:
+        return "Centroxogo 🇵🇹"
 
     return host
-
-
-# ============================================================
-# CDMC DETECTOR
-# ============================================================
-
-def is_cdmc_available(page):
-
-    print("  CDMC detector: checking purchase button...")
-
-    # --------------------------------------------------------
-    # PRIMARY SIGNAL
-    #
-    # Look for the ACTUAL visible purchase button.
-    # --------------------------------------------------------
-
-    try:
-
-        buttons = page.locator(
-            "button, a, input[type='submit']"
-        ).filter(
-            has_text=re.compile(
-                r"PŘIDAT\s+DO\s+KOŠÍKU",
-                re.IGNORECASE
-            )
-        )
-
-        count = buttons.count()
-
-        for i in range(count):
-
-            element = buttons.nth(i)
-
-            try:
-
-                if not element.is_visible():
-                    continue
-
-                # If it is a button, make sure it is enabled.
-                tag = element.evaluate(
-                    "(el) => el.tagName.toLowerCase()"
-                )
-
-                if tag == "button":
-
-                    if not element.is_enabled():
-                        continue
-
-                print(
-                    "  CDMC detector: "
-                    "VISIBLE + ENABLED 'PŘIDAT DO KOŠÍKU'"
-                )
-
-                return True
-
-            except Exception:
-                continue
-
-    except Exception as e:
-
-        print(
-            f"  CDMC button check failed: {e}"
-        )
-
-    # --------------------------------------------------------
-    # SECONDARY SIGNAL
-    #
-    # Look at VISIBLE body text only.
-    #
-    # This catches:
-    # Skladem (1 ks)
-    # Skladem (2 ks)
-    # Skladem (6 ks)
-    # Skladem (>15 ks)
-    # --------------------------------------------------------
-
-    try:
-
-        body_text = normalize(
-            page.locator("body").inner_text()
-        )
-
-        if re.search(
-            r"\bSkladem\s*\(\s*(?:\d+|>\s*\d+)\s*ks\s*\)",
-            body_text,
-            re.IGNORECASE,
-        ):
-
-            print(
-                "  CDMC detector: "
-                "VISIBLE 'Skladem (X ks)'"
-            )
-
-            return True
-
-    except Exception as e:
-
-        print(
-            f"  CDMC body check failed: {e}"
-        )
-
-    print(
-        "  CDMC detector: NOT AVAILABLE"
-    )
-
-    return False
 
 
 # ============================================================
@@ -329,7 +170,6 @@ def is_cdmc_available(page):
 def is_smarty_available(page):
 
     try:
-
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -342,13 +182,7 @@ def is_smarty_available(page):
 
         return False
 
-    # --------------------------------------------------------
-    # IMPORTANT:
-    #
-    # "Dostupné na prodejně" means store availability.
-    # It is NOT treated as online stock here.
-    # --------------------------------------------------------
-
+    # Store availability is NOT online stock
     if re.search(
         r"\bDostupné\s+na\s+prodejně\b",
         body_text,
@@ -356,15 +190,21 @@ def is_smarty_available(page):
     ):
 
         print(
-            "  Smarty: 'Dostupné na prodejně' "
-            "detected (NOT online stock)"
+            "  Smarty: store availability detected"
         )
 
-    # --------------------------------------------------------
     # Explicit unavailable states
-    # --------------------------------------------------------
+    unavailable_patterns = [
+        r"\bNení\s+skladem\b",
+        r"\bNeni\s+skladem\b",
+        r"\bVyprodáno\b",
+        r"\bVyprodano\b",
+        r"\bMomentálně\s+nedostupné\b",
+        r"\bNelze\s+zakoupit\b",
+        r"\bHlídat\s+produkt\b",
+    ]
 
-    for pattern in NOT_AVAILABLE_PATTERNS:
+    for pattern in unavailable_patterns:
 
         if re.search(
             pattern,
@@ -373,15 +213,12 @@ def is_smarty_available(page):
         ):
 
             print(
-                f"  Smarty: unavailable pattern: {pattern}"
+                f"  Smarty: unavailable: {pattern}"
             )
 
             return False
 
-    # --------------------------------------------------------
     # Online stock
-    # --------------------------------------------------------
-
     if re.search(
         r"\bSkladem\b",
         body_text,
@@ -389,7 +226,7 @@ def is_smarty_available(page):
     ):
 
         # If only store availability is shown,
-        # don't call it online stock.
+        # don't treat it as online stock.
         if re.search(
             r"\bDostupné\s+na\s+prodejně\b",
             body_text,
@@ -416,13 +253,12 @@ def is_smarty_available(page):
 
 
 # ============================================================
-# HRANANETU DETECTOR
+# ALZA DETECTOR
 # ============================================================
 
-def is_hrananetu_available(page):
+def is_alza_available(page):
 
     try:
-
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -430,35 +266,64 @@ def is_hrananetu_available(page):
     except Exception as e:
 
         print(
-            f"  Hrananetu body check failed: {e}"
+            f"  Alza body check failed: {e}"
         )
 
         return False
 
-    # Explicit unavailable
-    if re.search(
-        r"\bNení\s+skladem\b",
-        body_text,
-        re.IGNORECASE,
-    ):
+    unavailable_patterns = [
+        r"Není skladem",
+        r"Neni skladem",
+        r"Vyprodáno",
+        r"Vyprodano",
+        r"Momentálně nedostupné",
+        r"Momentálně vyprodáno",
+        r"Nelze objednat",
+    ]
 
-        return False
+    for pattern in unavailable_patterns:
 
-    # Specific stock format
-    if re.search(
-        r"\b\d+\+?\s*ks\s+na\s+skladě\b",
-        body_text,
-        re.IGNORECASE,
-    ):
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
 
-        return True
+            print(
+                f"  Alza: unavailable: {pattern}"
+            )
 
-    # Generic stock
+            return False
+
+    purchase_patterns = [
+        r"Do košíku",
+        r"Přidat do košíku",
+        r"Koupit",
+    ]
+
+    for pattern in purchase_patterns:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            print(
+                f"  Alza: purchase signal: {pattern}"
+            )
+
+            return True
+
     if re.search(
         r"\bSkladem\b",
         body_text,
         re.IGNORECASE,
     ):
+
+        print(
+            "  Alza: Skladem detected"
+        )
 
         return True
 
@@ -472,7 +337,6 @@ def is_hrananetu_available(page):
 def is_rohlik_available(page):
 
     try:
-
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -485,32 +349,28 @@ def is_rohlik_available(page):
 
         return False
 
-    # Strong unavailable signals
-    if re.search(
+    unavailable_patterns = [
         r"\bVyprodáno\b",
-        body_text,
-        re.IGNORECASE,
-    ):
-
-        return False
-
-    if re.search(
+        r"\bVyprodano\b",
         r"\bNení\s+dostupné\b",
-        body_text,
-        re.IGNORECASE,
-    ):
-
-        return False
-
-    if re.search(
+        r"\bNeni\s+dostupne\b",
         r"\bNelze\s+zakoupit\b",
-        body_text,
-        re.IGNORECASE,
-    ):
+    ]
 
-        return False
+    for pattern in unavailable_patterns:
 
-    # Rohlík purchase controls
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            print(
+                f"  Rohlík: unavailable: {pattern}"
+            )
+
+            return False
+
     purchase_patterns = [
         r"Do\s+košíku",
         r"Přidat\s+do\s+košíku",
@@ -526,77 +386,11 @@ def is_rohlik_available(page):
             re.IGNORECASE,
         ):
 
-            return True
-
-    return False
-
-
-# ============================================================
-# ALZA DETECTOR
-# ============================================================
-
-def is_alza_available(page):
-
-    try:
-
-        body_text = normalize(
-            page.locator("body").inner_text()
-        )
-
-    except Exception as e:
-
-        print(
-            f"  Alza body check failed: {e}"
-        )
-
-        return False
-
-    # Strong unavailable states
-    unavailable = [
-        r"Není skladem",
-        r"Neni skladem",
-        r"Vyprodáno",
-        r"Vyprodano",
-        r"Momentálně nedostupné",
-        r"Momentálně vyprodáno",
-        r"Nelze objednat",
-    ]
-
-    for pattern in unavailable:
-
-        if re.search(
-            pattern,
-            body_text,
-            re.IGNORECASE,
-        ):
-
-            return False
-
-    # Actual purchase signals
-    purchase_patterns = [
-        r"Do košíku",
-        r"Přidat do košíku",
-        r"Koupit",
-    ]
-
-    for pattern in purchase_patterns:
-
-        if re.search(
-            pattern,
-            body_text,
-            re.IGNORECASE,
-        ):
+            print(
+                f"  Rohlík: purchase signal: {pattern}"
+            )
 
             return True
-
-    # Skladem is also valid
-    if re.search(
-        r"\bSkladem\b",
-        body_text,
-        re.IGNORECASE,
-    ):
-
-        return True
 
     return False
 
@@ -608,7 +402,6 @@ def is_alza_available(page):
 def is_cernyrytir_available(page):
 
     try:
-
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -621,7 +414,6 @@ def is_cernyrytir_available(page):
 
         return False
 
-    # Explicit unavailable
     unavailable_patterns = [
         r"Není skladem",
         r"Neni skladem",
@@ -640,9 +432,12 @@ def is_cernyrytir_available(page):
             re.IGNORECASE,
         ):
 
+            print(
+                f"  Černý rytíř: unavailable: {pattern}"
+            )
+
             return False
 
-    # Purchase signals
     purchase_patterns = [
         r"Do košíku",
         r"Přidat do košíku",
@@ -658,16 +453,136 @@ def is_cernyrytir_available(page):
             re.IGNORECASE,
         ):
 
+            print(
+                f"  Černý rytíř: purchase signal: {pattern}"
+            )
+
             return True
 
-    # Stock text
     if re.search(
         r"\bSkladem\b",
         body_text,
         re.IGNORECASE,
     ):
 
+        print(
+            "  Černý rytíř: Skladem detected"
+        )
+
         return True
+
+    return False
+
+
+# ============================================================
+# CENTROXOGO DETECTOR - PORTUGAL
+# ============================================================
+
+def is_centroxogo_available(page):
+
+    print(
+        "  Centroxogo: checking Portuguese stock..."
+    )
+
+    try:
+
+        body_text = normalize(
+            page.locator("body").inner_text()
+        )
+
+    except Exception as e:
+
+        print(
+            f"  Centroxogo body check failed: {e}"
+        )
+
+        return False
+
+    # --------------------------------------------------------
+    # UNAVAILABLE PORTUGUESE SIGNALS
+    # --------------------------------------------------------
+
+    unavailable_patterns = [
+        r"\bEsgotado\b",
+        r"\bEsgotada\b",
+        r"\bSem\s+stock\b",
+        r"\bSem\s+estoque\b",
+        r"\bIndisponível\b",
+        r"\bIndisponivel\b",
+        r"\bNão\s+disponível\b",
+        r"\bNao\s+disponivel\b",
+        r"\bTemporariamente\s+indisponível\b",
+        r"\bTemporariamente\s+indisponivel\b",
+    ]
+
+    for pattern in unavailable_patterns:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            print(
+                f"  Centroxogo: unavailable: {pattern}"
+            )
+
+            return False
+
+    # --------------------------------------------------------
+    # PURCHASE BUTTONS / ACTIONS
+    # --------------------------------------------------------
+
+    purchase_patterns = [
+        r"\bAdicionar\s+ao\s+carrinho\b",
+        r"\bAdiciona\s+ao\s+carrinho\b",
+        r"\bComprar\b",
+        r"\bEncomendar\b",
+        r"\bAdicionar\b",
+    ]
+
+    for pattern in purchase_patterns:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            print(
+                f"  Centroxogo: purchase signal: {pattern}"
+            )
+
+            return True
+
+    # --------------------------------------------------------
+    # STOCK WORDS
+    # --------------------------------------------------------
+
+    stock_patterns = [
+        r"\bEm\s+stock\b",
+        r"\bEm\s+estoque\b",
+        r"\bDisponível\b",
+        r"\bDisponivel\b",
+    ]
+
+    for pattern in stock_patterns:
+
+        if re.search(
+            pattern,
+            body_text,
+            re.IGNORECASE,
+        ):
+
+            print(
+                f"  Centroxogo: stock signal: {pattern}"
+            )
+
+            return True
+
+    print(
+        "  Centroxogo: NOT AVAILABLE"
+    )
 
     return False
 
@@ -679,7 +594,6 @@ def is_cernyrytir_available(page):
 def is_generic_available(page):
 
     try:
-
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -692,17 +606,19 @@ def is_generic_available(page):
 
         return False
 
-    # --------------------------------------------------------
-    # IMPORTANT:
-    #
-    # We now inspect VISIBLE BODY TEXT.
-    # We no longer inspect page.content().
-    #
-    # This prevents hidden HTML from falsely saying
-    # "Není skladem".
-    # --------------------------------------------------------
+    unavailable_patterns = [
+        r"Není skladem",
+        r"Neni skladem",
+        r"Vyprodáno",
+        r"Vyprodano",
+        r"Out of stock",
+        r"Sold out",
+        r"Esgotado",
+        r"Sem stock",
+        r"Indisponível",
+    ]
 
-    for pattern in NOT_AVAILABLE_PATTERNS:
+    for pattern in unavailable_patterns:
 
         if re.search(
             pattern,
@@ -712,7 +628,18 @@ def is_generic_available(page):
 
             return False
 
-    for pattern in AVAILABLE_PATTERNS:
+    available_patterns = [
+        r"Do košíku",
+        r"Přidat do košíku",
+        r"Koupit",
+        r"Add to cart",
+        r"Skladem",
+        r"Em stock",
+        r"Disponível",
+        r"Disponivel",
+    ]
+
+    for pattern in available_patterns:
 
         if re.search(
             pattern,
@@ -733,37 +660,21 @@ def check_availability(page, url):
 
     host = urlparse(url).netloc.lower()
 
-    # CDMC
-    if "cdmc.cz" in host:
-
-        return is_cdmc_available(page)
-
-    # Smarty
     if "smarty.cz" in host:
-
         return is_smarty_available(page)
 
-    # Hrananetu
-    if "hrananetu.cz" in host:
-
-        return is_hrananetu_available(page)
-
-    # Rohlík
-    if "rohlik.cz" in host:
-
-        return is_rohlik_available(page)
-
-    # Alza
     if "alza.cz" in host:
-
         return is_alza_available(page)
 
-    # Černý rytíř
-    if "cernyrytir.cz" in host:
+    if "rohlik.cz" in host:
+        return is_rohlik_available(page)
 
+    if "cernyrytir.cz" in host:
         return is_cernyrytir_available(page)
 
-    # Everything else
+    if "centroxogo.pt" in host:
+        return is_centroxogo_available(page)
+
     return is_generic_available(page)
 
 
@@ -773,7 +684,9 @@ def check_availability(page, url):
 
 def fetch_page(page, url):
 
-    print(f"Checking: {url}")
+    print(
+        f"\nChecking: {url}"
+    )
 
     try:
 
@@ -797,7 +710,7 @@ def fetch_page(page, url):
 
         return False
 
-    # Allow JavaScript to render.
+    # Allow JavaScript to render
     page.wait_for_timeout(2000)
 
     return True
@@ -823,12 +736,12 @@ def main():
 
         context = browser.new_context(
 
-            locale="cs-CZ",
+            locale="pt-PT",
 
             timezone_id="Europe/Prague",
 
             user_agent=(
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 "AppleWebKit/537.36 "
                 "(KHTML, like Gecko) "
                 "Chrome/140.0.0.0 "
@@ -865,10 +778,6 @@ def main():
 
                     continue
 
-                # --------------------------------------------
-                # STORE-SPECIFIC DETECTION
-                # --------------------------------------------
-
                 available = check_availability(
                     page,
                     url
@@ -886,12 +795,11 @@ def main():
                     f"(previous: {previous})"
                 )
 
-                # --------------------------------------------
-                # ALERT ONLY ON:
+                # ------------------------------------------------
+                # ALERT ONLY WHEN:
                 #
-                # not_available -> available
-                #
-                # --------------------------------------------
+                # unavailable/unknown -> available
+                # ------------------------------------------------
 
                 if (
                     previous != "available"
@@ -900,7 +808,7 @@ def main():
 
                     newly_available.append(
                         (
-                            f"🚨 POKÉMON BACK IN STOCK 🚨\n\n"
+                            "🚨 POKÉMON BACK IN STOCK 🚨\n\n"
                             f"🏪 {product_name(url)}\n"
                             f"🔗 {url}"
                         )
@@ -918,17 +826,17 @@ def main():
                     f"  ERROR checking {url}: {e}"
                 )
 
-                # Keep previous state if check failed.
+                # Keep previous state if check failed
                 continue
 
-            # Small delay between websites.
+            # Small delay between websites
             time.sleep(1)
 
         context.close()
         browser.close()
 
     # ========================================================
-    # SEND TELEGRAM
+    # SEND TELEGRAM ALERT
     # ========================================================
 
     if newly_available:
@@ -973,5 +881,4 @@ def main():
 # ============================================================
 
 if __name__ == "__main__":
-
     main()

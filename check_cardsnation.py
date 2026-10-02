@@ -14,26 +14,53 @@ from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 # ============================================================
 
 URLS = [
-    # Smarty
+    # ========================================================
+    # ALZA - CZECH BOOSTER BUNDLE SEARCH
+    # ========================================================
+    "https://www.alza.cz/search.htm?exps=booster+bundle",
+
+    # ========================================================
+    # SMARTY
+    # ========================================================
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Elite-Trainer-Box-4p278101",
     "https://www.smarty.cz/Pokemon-TCG-30th-Celebration-Greninja-ex-Box-4p278100",
 
-    # Alza
+    # ========================================================
+    # ALZA
+    # ========================================================
     "https://www.alza.cz/hracky/pokemon-tcg-30th-celebration-elite-trainer-box-d13521013.htm",
 
-    # Rohlík
+    # ========================================================
+    # ROHLÍK
+    # ========================================================
     "https://www.rohlik.cz/1483651-pokemon-tcg-30th-celebration-elite-trainer-box",
     "https://www.rohlik.cz/1483649-pokemon-tcg-30th-celebration-sylveon-ex-box",
 
-    # Centroxogo - Portugal
+    # ========================================================
+    # CENTROXOGO - PORTUGAL
+    # ========================================================
     "https://www.centroxogo.pt/pokemon-tcg-30th-celebration-elite-trainer-box-003pc10447101.html",
     "https://www.centroxogo.pt/brinquedos-personagem/pokemon/cartas-tcg-pokemon/pokemon-tcg-30th-celebration-booster-bundle-003pc10451101.html",
 
-    
+    # ========================================================
+    # EL CORTE INGLES - PORTUGAL
+    # ========================================================
     "https://www.elcorteingles.pt/brinquedos/A202042813-30-caixa-elite-trainer-comemoracao-do-30-aniversario-do-tcg-ingles-pokemon-bandai",
+
+    # ========================================================
+    # TOYS R US - PORTUGAL
+    # ========================================================
     "https://www.toysrus.pt/Pok%C3%A9mon-30%C2%BA-Anivers%C3%A1rio-Booster-Bundle-%28Ingl%C3%AAs%29/p/K1108953",
-    
 ]
+
+
+# ============================================================
+# ALZA SEARCH PAGE
+# ============================================================
+
+ALZA_BOOSTER_SEARCH_URL = (
+    "https://www.alza.cz/search.htm?exps=booster+bundle"
+)
 
 
 # ============================================================
@@ -85,6 +112,7 @@ def send_heartbeat(state):
     )
 
     try:
+
         telegram_send(message)
 
         state["_last_heartbeat_hour"] = current_hour
@@ -92,6 +120,7 @@ def send_heartbeat(state):
         print("Heartbeat sent.")
 
     except Exception as e:
+
         print(f"Heartbeat failed: {e}")
 
 
@@ -104,6 +133,7 @@ def load_state():
     if STATE_FILE.exists():
 
         try:
+
             return json.loads(
                 STATE_FILE.read_text(
                     encoding="utf-8"
@@ -111,6 +141,7 @@ def load_state():
             )
 
         except Exception:
+
             return {}
 
     return {}
@@ -162,7 +193,81 @@ def product_name(url):
     if "centroxogo.pt" in host:
         return "Centroxogo 🇵🇹"
 
+    if "elcorteingles.pt" in host:
+        return "El Corte Inglés 🇵🇹"
+
+    if "toysrus.pt" in host:
+        return "Toys R Us 🇵🇹"
+
     return host
+
+
+# ============================================================
+# ALZA SEARCH PAGE
+# NEW BOOSTER BUNDLE DISCOVERY
+# ============================================================
+
+def discover_alza_booster_bundles(page):
+
+    discovered = {}
+
+    try:
+
+        links = page.locator("a").all()
+
+        for link in links:
+
+            try:
+
+                href = link.get_attribute("href")
+                title = normalize(link.inner_text())
+
+                if not href or not title:
+                    continue
+
+                # Convert relative URLs
+                if href.startswith("/"):
+                    href = "https://www.alza.cz" + href
+
+                combined = f"{title} {href}".lower()
+
+                # Only Alza product pages
+                if "alza.cz" not in href.lower():
+                    continue
+
+                if ".htm" not in href.lower():
+                    continue
+
+                # Don't treat the search page itself as a product
+                if "/search.htm" in href.lower():
+                    continue
+
+                # Must look like a Pokémon Booster Bundle
+                if "pokemon" not in combined:
+                    continue
+
+                if (
+                    "booster bundle" not in combined
+                    and "booster-bundle" not in combined
+                ):
+                    continue
+
+                # Remove query strings/fragments
+                clean_url = href.split("#")[0].split("?")[0]
+
+                discovered[clean_url] = title
+
+            except Exception:
+
+                continue
+
+    except Exception as e:
+
+        print(
+            f"  Alza booster discovery failed: {e}"
+        )
+
+    return discovered
 
 
 # ============================================================
@@ -172,6 +277,7 @@ def product_name(url):
 def is_smarty_available(page):
 
     try:
+
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -261,6 +367,7 @@ def is_smarty_available(page):
 def is_alza_available(page):
 
     try:
+
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -339,6 +446,7 @@ def is_alza_available(page):
 def is_rohlik_available(page):
 
     try:
+
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -404,6 +512,7 @@ def is_rohlik_available(page):
 def is_cernyrytir_available(page):
 
     try:
+
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -596,6 +705,7 @@ def is_centroxogo_available(page):
 def is_generic_available(page):
 
     try:
+
         body_text = normalize(
             page.locator("body").inner_text()
         )
@@ -729,6 +839,7 @@ def main():
     send_heartbeat(state)
 
     newly_available = []
+    new_alza_products = []
 
     with sync_playwright() as p:
 
@@ -737,11 +848,8 @@ def main():
         )
 
         context = browser.new_context(
-
             locale="pt-PT",
-
             timezone_id="Europe/Prague",
-
             user_agent=(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 "AppleWebKit/537.36 "
@@ -749,7 +857,6 @@ def main():
                 "Chrome/140.0.0.0 "
                 "Safari/537.36"
             ),
-
             viewport={
                 "width": 1440,
                 "height": 1000,
@@ -758,7 +865,64 @@ def main():
 
         page = context.new_page()
 
+        # ========================================================
+        # ALZA BOOSTER BUNDLE DISCOVERY
+        # ========================================================
+
+        try:
+
+            if fetch_page(
+                page,
+                ALZA_BOOSTER_SEARCH_URL
+            ):
+
+                discovered = (
+                    discover_alza_booster_bundles(page)
+                )
+
+                print(
+                    "  Alza booster search: "
+                    f"found {len(discovered)} product listing(s)"
+                )
+
+                for product_url, title in discovered.items():
+
+                    state_key = (
+                        f"_alza_discovered::{product_url}"
+                    )
+
+                    # Only notify for products never seen before
+                    if state_key not in state:
+
+                        new_alza_products.append(
+                            (
+                                "🆕 NEW ALZA BOOSTER BUNDLE\n\n"
+                                f"📦 {title}\n"
+                                f"🔗 {product_url}"
+                            )
+                        )
+
+                        state[state_key] = "discovered"
+
+                        print(
+                            f"  🆕 New Alza product: {title}"
+                        )
+
+        except Exception as e:
+
+            print(
+                f"  Alza booster discovery error: {e}"
+            )
+
+        # ========================================================
+        # NORMAL PRODUCT STOCK MONITORING
+        # ========================================================
+
         for url in URLS:
+
+            # Search page is handled separately above
+            if url == ALZA_BOOSTER_SEARCH_URL:
+                continue
 
             previous = state.get(
                 url,
@@ -841,11 +1005,16 @@ def main():
     # SEND TELEGRAM ALERT
     # ========================================================
 
-    if newly_available:
+    all_alerts = (
+        new_alza_products
+        + newly_available
+    )
+
+    if all_alerts:
 
         message = (
-            "🚨 POKÉMON RESTOCK ALERT 🚨\n\n"
-            + "\n\n".join(newly_available)
+            "🚨 POKÉMON MONITOR ALERT 🚨\n\n"
+            + "\n\n".join(all_alerts)
         )
 
         print(
@@ -871,7 +1040,7 @@ def main():
     else:
 
         print(
-            "\nNo new stock. "
+            "\nNo new products or stock changes. "
             "No notification sent."
         )
 

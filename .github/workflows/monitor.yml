@@ -1,4 +1,4 @@
-```yaml
+
 name: Stock Monitor
 
 on:
@@ -62,4 +62,3 @@ jobs:
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
-```
